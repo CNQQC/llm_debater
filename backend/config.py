@@ -21,6 +21,7 @@ class DebaterConfig:
     name: str
     provider: str
     model: str
+    style: str = ""  # 可选：人格/风格提示，会注入到该辩手的 system prompt
 
 
 @dataclass

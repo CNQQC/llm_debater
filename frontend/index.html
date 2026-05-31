@@ -3,58 +3,188 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LLM 辩论场 · LLM Debater</title>
+  <title>思辨场 · LLM 辩论公报</title>
+  <meta name="description" content="思辨场 —— 群机论辩公报。多个大模型随机分立正反，主持人 AI 拟题，开篇陈述与驳论实时呈现。" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,900;1,9..144,400;1,9..144,600&family=Archivo:wght@500;600;700;800&family=Noto+Serif+SC:wght@400;500;600;700;900&display=swap"
+    rel="stylesheet"
+  />
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <span class="logo">⚔️</span>
-      <div>
-        <h1>LLM 辩论场</h1>
-        <p class="subtitle">多模型 · 随机正反 · 实时陈述</p>
-      </div>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <!-- ═══════════════════════ 报头 / MASTHEAD ═══════════════════════ -->
+  <header class="masthead">
+    <div class="masthead__topmeta">
+      <span class="topmeta__est">EST. MMXXVI</span>
+      <span class="topmeta__price">逐字直播 · 无删节</span>
+      <span class="topmeta__edition" id="edition">第 I 场</span>
     </div>
-    <div id="agent-info" class="agent-info"></div>
+
+    <div class="rule rule--double"></div>
+
+    <h1 class="nameplate">
+      <span class="nameplate__cn">思辨场</span>
+      <span class="nameplate__en">THE&nbsp;DISCOURSE</span>
+    </h1>
+
+    <p class="masthead__sub">群 机 论 辩 公 报 &nbsp;·&nbsp; A&nbsp;GAZETTE&nbsp;OF&nbsp;MACHINE&nbsp;MINDS</p>
+
+    <div class="rule"></div>
+
+    <div class="byline">
+      <span class="byline__date" id="dateline">——</span>
+      <span class="byline__live" id="onair" hidden><i></i>直播 ON&nbsp;AIR</span>
+      <span class="byline__host" id="host-line">主持人 · ——</span>
+    </div>
   </header>
 
-  <main class="container">
-    <!-- 配置区 -->
-    <section class="panel" id="setup">
-      <label class="field">
-        <span class="field-label">辩题（留空则由主持人 AI 自动出题）</span>
-        <textarea id="topic" rows="2" placeholder="例如：人工智能的发展利大于弊"></textarea>
-      </label>
+  <main class="sheet">
 
-      <div class="row">
-        <label class="field field-inline">
-          <span class="field-label">上场辩手数量</span>
-          <select id="num"></select>
-        </label>
-        <div class="roster-preview" id="roster-preview"></div>
+    <!-- ═══════════════════════ 投稿台 / SETUP ═══════════════════════ -->
+    <section class="desk" id="setup">
+      <div class="desk__lead">
+        <span class="kicker">投稿 · SUBMIT THE MOTION</span>
+        <h2 class="desk__headline">今晚，<em>辩论</em>什么？</h2>
+        <p class="desk__dek">写下你的辩题；若留空，便由主持人 AI 即兴拟一道兼具锋芒与思辨的命题，随后随机分立正反两方，先开篇、再驳论。</p>
       </div>
 
-      <div class="actions">
-        <button id="start" class="btn btn-primary">开始辩论</button>
-        <span id="status" class="status"></span>
+      <label class="motion-field">
+        <span class="motion-field__label">本场辩题</span>
+        <textarea id="topic" rows="2" placeholder="例如：人工智能的发展利大于弊"></textarea>
+        <span class="motion-field__rule"></span>
+      </label>
+
+      <div class="desk__controls">
+        <label class="control">
+          <span class="control__label">上场辩手</span>
+          <div class="select-wrap">
+            <select id="num"></select>
+            <span class="select-wrap__chevron" aria-hidden="true">▾</span>
+          </div>
+        </label>
+
+        <div class="desk__actions">
+          <button id="start" class="btn btn--ink" type="button">
+            开庭辩论 <span class="btn__arrow" aria-hidden="true">→</span>
+          </button>
+          <button id="demo" class="btn btn--ghost" type="button">观摩演示</button>
+        </div>
+      </div>
+
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+
+      <div class="bench">
+        <div class="bench__head">
+          <span class="kicker">今夜辩席 · TONIGHT&nbsp;ON THE BENCH</span>
+          <span class="bench__count" id="bench-count">——</span>
+        </div>
+        <div class="bench__grid" id="roster-preview"></div>
       </div>
     </section>
 
-    <!-- 辩论区 -->
-    <section id="arena" class="arena hidden">
-      <div id="topic-banner" class="topic-banner"></div>
-      <div class="columns">
-        <div class="column col-pro">
-          <div class="col-head"><span class="side-tag pro">正方</span><span>支持该观点</span></div>
-          <div class="cards" id="col-pro"></div>
+    <!-- ═══════════════════════ 辩论席 / ARENA ═══════════════════════ -->
+    <section class="arena hidden" id="arena" aria-live="polite">
+      <div class="motion" id="topic-banner"></div>
+
+      <div class="boutbar" id="boutbar" hidden>
+        <div class="boutbar__side boutbar__side--pro">
+          <span class="boutbar__tag">正方 · AFFIRMATIVE</span>
+          <span class="boutbar__num" id="bout-pro">0</span>
         </div>
-        <div class="column col-con">
-          <div class="col-head"><span class="side-tag con">反方</span><span>反对该观点</span></div>
-          <div class="cards" id="col-con"></div>
+        <div class="boutbar__center">
+          <span class="boutbar__round" id="bout-round">开篇陈述</span>
+          <span class="boutbar__phase" id="bout-phase">OPENING STATEMENTS</span>
+        </div>
+        <div class="boutbar__side boutbar__side--con">
+          <span class="boutbar__num" id="bout-con">0</span>
+          <span class="boutbar__tag">反方 · NEGATIVE</span>
+        </div>
+      </div>
+
+      <!-- 第一轮 · 开篇陈述 -->
+      <div class="round" id="round1">
+        <div class="round__rubric">
+          <span class="round__no">第一轮</span>
+          <span class="round__name">开篇陈述</span>
+          <span class="round__en">ROUND&nbsp;I · OPENING STATEMENTS</span>
+        </div>
+        <div class="floor">
+          <div class="corner corner--pro">
+            <div class="corner__head">
+              <span class="corner__seal">正</span>
+              <div class="corner__txt">
+                <span class="corner__role">正方席 · 支持此命题</span>
+                <span class="corner__sub">IN THE BLUE CORNER</span>
+              </div>
+            </div>
+            <div class="cards" id="col-pro"></div>
+          </div>
+
+          <div class="divider" aria-hidden="true"><span class="vs">VS</span></div>
+
+          <div class="corner corner--con">
+            <div class="corner__head">
+              <span class="corner__seal">反</span>
+              <div class="corner__txt">
+                <span class="corner__role">反方席 · 反对此命题</span>
+                <span class="corner__sub">IN THE RED CORNER</span>
+              </div>
+            </div>
+            <div class="cards" id="col-con"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 中场 · 进入第二轮 -->
+      <div class="intermission hidden" id="intermission">
+        <span class="intermission__orn">✦ ✦ ✦</span>
+        <p class="intermission__note" id="intermission-note">开篇已毕。下一程——正反随机两两<strong>锁定配对</strong>，针锋相对展开<strong>驳论</strong>。</p>
+        <div class="intermission__actions">
+          <button id="to-round2" class="btn btn--ink" type="button">进入第二轮 · 驳论 <span class="btn__arrow" aria-hidden="true">→</span></button>
+          <button id="stop-here" class="btn btn--ghost" type="button">就此休庭</button>
+        </div>
+      </div>
+
+      <!-- 第二轮 · 驳论（锁定对决） -->
+      <section class="round round2 hidden" id="round2">
+        <div class="round__rubric round__rubric--r2">
+          <span class="round__no">第二轮</span>
+          <span class="round__name">驳论 · 锁定对决</span>
+          <span class="round__en">ROUND&nbsp;II · REBUTTAL · LOCKED BOUTS</span>
+        </div>
+        <p class="r2note hidden" id="r2-note"></p>
+        <div class="bouts" id="bouts"></div>
+      </section>
+
+      <!-- 休庭 -->
+      <div class="curtain hidden" id="curtain">
+        <span class="curtain__stamp" id="curtain-stamp">休 庭</span>
+        <p class="curtain__note" id="curtain-note">两轮已毕。下一程——自由辩论、终辩陈词与评委裁决，静候续场。</p>
+        <div class="curtain__actions">
+          <button id="again" class="btn btn--ink" type="button">再开一场 <span class="btn__arrow" aria-hidden="true">→</span></button>
+          <button id="copy" class="btn btn--ghost" type="button">誊抄全场实录</button>
         </div>
       </div>
     </section>
   </main>
+
+  <footer class="colophon">
+    <div class="rule rule--double"></div>
+    <p class="colophon__line">
+      <span>思辨场 · THE DISCOURSE</span>
+      <span class="colophon__dot">✦</span>
+      <span>开篇 · 驳论 · 由 FastAPI 排版，多模型并行口播</span>
+      <span class="colophon__dot">✦</span>
+      <span id="colophon-host">主持人 ——</span>
+    </p>
+    <p class="colophon__fine">本报所载言论由各大语言模型即兴生成，仅为思辨演练，不代表本场立场。</p>
+  </footer>
 
   <script src="/static/app.js"></script>
 </body>

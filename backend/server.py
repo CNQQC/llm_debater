@@ -1,4 +1,4 @@
-"""FastAPI 服务：提供配置查询、辩论流式接口，并托管前端静态页面。"""
+"""FastAPI 服务：配置查询、各轮辩论流式接口，并托管前端静态页面。"""
 from __future__ import annotations
 
 import json
@@ -23,6 +23,16 @@ llm = LLMClient(config)
 
 app = FastAPI(title="LLM Debater")
 
+STREAM_HEADERS = {"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
+
+
+def _ndjson(event_gen):
+    async def gen():
+        async for event in event_gen:
+            yield json.dumps(event, ensure_ascii=False) + "\n"
+
+    return StreamingResponse(gen(), media_type="application/x-ndjson", headers=STREAM_HEADERS)
+
 
 @app.get("/api/config")
 async def get_config():
@@ -35,6 +45,7 @@ async def get_config():
                 "name": d.name,
                 "model": d.model,
                 "provider": d.provider,
+                "style": d.style,
                 "available": config.has_key(d.provider),
             }
         )
@@ -52,6 +63,7 @@ async def get_config():
 
 @app.post("/api/debate")
 async def post_debate(req: Request):
+    """第一轮：出题 + 随机分边 + 开篇陈述（流式）。"""
     body = await req.json()
     topic = body.get("topic")
     num = body.get("num_debaters")
@@ -59,18 +71,13 @@ async def post_debate(req: Request):
         num = int(num) if num is not None else None
     except (TypeError, ValueError):
         num = None
+    return _ndjson(debate_mod.run_debate(llm, config, topic=topic, num_debaters=num))
 
-    async def gen():
-        async for event in debate_mod.run_debate(
-            llm, config, topic=topic, num_debaters=num
-        ):
-            yield json.dumps(event, ensure_ascii=False) + "\n"
 
-    return StreamingResponse(
-        gen(),
-        media_type="application/x-ndjson",
-        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
-    )
+@app.post("/api/debate/{debate_id}/round2")
+async def post_round2(debate_id: str):
+    """第二轮：锁定配对 + 驳论（继承第一轮上下文，流式）。"""
+    return _ndjson(debate_mod.run_rebuttal(llm, config, debate_id))
 
 
 @app.get("/")

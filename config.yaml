@@ -2,9 +2,13 @@
 # LLM Debater 配置
 # providers: 各提供商的 OpenAI 兼容接入点（api_key_env 指向 .env 里的变量名）
 # main_agent: 主持人用哪个模型来生成辩题
-# debaters:  辩手名册——每个辩手绑定一个 (provider, model)
+# debaters:  辩手名册——每个辩手绑定一个 (provider, model)，可选 style 人格提示
 #            只有对应 provider 的 API Key 已配置的辩手才会上场
-# 注意：SiliconFlow / OpenRouter 的可用 model id 会更新，请按各平台最新目录调整。
+#
+# 说明：当前只配置了 DeepSeek 一个 Key，因此放了 4 个 DeepSeek 不同“人格”的辩手，
+# 这样仅凭一个 Key 也能凑成 2 正 vs 2 反、形成 2 对锁定对决。
+# 配置了 Moonshot / SiliconFlow / OpenRouter 的 Key 后，下方对应辩手会自动上场。
+# 注意：SiliconFlow / OpenRouter 的 model id 会随平台更新，按各平台最新目录调整。
 # ===========================================================================
 
 providers:
@@ -26,37 +30,64 @@ main_agent:
   model: deepseek-chat
 
 debaters:
-  - id: deepseek-v3
-    name: DeepSeek-V3
+  # —— DeepSeek 四个人格（单 Key 即可凑齐多辩手）——
+  - id: ds-logic
+    name: DeepSeek·逻辑派
     provider: deepseek
     model: deepseek-chat
+    style: 重数据与逻辑链条，善用归谬与举证，论证环环相扣
 
+  - id: ds-value
+    name: DeepSeek·价值派
+    provider: deepseek
+    model: deepseek-chat
+    style: 从伦理、价值与人文关怀切入，语言富有感染力
+
+  - id: ds-pragmatic
+    name: DeepSeek·实用派
+    provider: deepseek
+    model: deepseek-chat
+    style: 紧扣现实可行性与利弊权衡，善用贴近生活的实例
+
+  - id: ds-sharp
+    name: DeepSeek·犀利派
+    provider: deepseek
+    model: deepseek-chat
+    style: 言辞犀利、节奏明快，擅长直击对方论证的要害
+
+  # —— 以下辩手需配置对应 provider 的 API Key 后自动上场 ——
   - id: kimi
     name: Kimi (Moonshot)
     provider: moonshot
     model: moonshot-v1-8k
+    style: 沉稳缜密，层层递进
 
   - id: qwen
     name: 通义千问 2.5-72B
     provider: siliconflow
     model: Qwen/Qwen2.5-72B-Instruct
+    style: 旁征博引，论据扎实
 
   - id: glm
     name: GLM-4-9B
     provider: siliconflow
     model: THUDM/glm-4-9b-chat
+    style: 条理清晰，重视结构
 
   - id: claude
     name: Claude 3.5 Sonnet
     provider: openrouter
     model: anthropic/claude-3.5-sonnet
+    style: 细腻周全，兼顾多方视角
 
   - id: gpt
     name: GPT-4o mini
     provider: openrouter
     model: openai/gpt-4o-mini
+    style: 灵活机敏，反应迅速
 
   - id: gemini
     name: Gemini 1.5 Flash
     provider: openrouter
     model: google/gemini-flash-1.5
+    style: 视角新颖，善于类比
