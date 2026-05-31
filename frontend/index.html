@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LLM 辩论场 · LLM Debater</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">⚔️</span>
+      <div>
+        <h1>LLM 辩论场</h1>
+        <p class="subtitle">多模型 · 随机正反 · 实时陈述</p>
+      </div>
+    </div>
+    <div id="agent-info" class="agent-info"></div>
+  </header>
+
+  <main class="container">
+    <!-- 配置区 -->
+    <section class="panel" id="setup">
+      <label class="field">
+        <span class="field-label">辩题（留空则由主持人 AI 自动出题）</span>
+        <textarea id="topic" rows="2" placeholder="例如：人工智能的发展利大于弊"></textarea>
+      </label>
+
+      <div class="row">
+        <label class="field field-inline">
+          <span class="field-label">上场辩手数量</span>
+          <select id="num"></select>
+        </label>
+        <div class="roster-preview" id="roster-preview"></div>
+      </div>
+
+      <div class="actions">
+        <button id="start" class="btn btn-primary">开始辩论</button>
+        <span id="status" class="status"></span>
+      </div>
+    </section>
+
+    <!-- 辩论区 -->
+    <section id="arena" class="arena hidden">
+      <div id="topic-banner" class="topic-banner"></div>
+      <div class="columns">
+        <div class="column col-pro">
+          <div class="col-head"><span class="side-tag pro">正方</span><span>支持该观点</span></div>
+          <div class="cards" id="col-pro"></div>
+        </div>
+        <div class="column col-con">
+          <div class="col-head"><span class="side-tag con">反方</span><span>反对该观点</span></div>
+          <div class="cards" id="col-con"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

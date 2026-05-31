@@ -1,0 +1,62 @@
+# ===========================================================================
+# LLM Debater 配置
+# providers: 各提供商的 OpenAI 兼容接入点（api_key_env 指向 .env 里的变量名）
+# main_agent: 主持人用哪个模型来生成辩题
+# debaters:  辩手名册——每个辩手绑定一个 (provider, model)
+#            只有对应 provider 的 API Key 已配置的辩手才会上场
+# 注意：SiliconFlow / OpenRouter 的可用 model id 会更新，请按各平台最新目录调整。
+# ===========================================================================
+
+providers:
+  deepseek:
+    base_url: https://api.deepseek.com/v1
+    api_key_env: DEEPSEEK_API_KEY
+  moonshot:
+    base_url: https://api.moonshot.cn/v1
+    api_key_env: MOONSHOT_API_KEY
+  siliconflow:
+    base_url: https://api.siliconflow.cn/v1
+    api_key_env: SILICONFLOW_API_KEY
+  openrouter:
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEY
+
+main_agent:
+  provider: deepseek
+  model: deepseek-chat
+
+debaters:
+  - id: deepseek-v3
+    name: DeepSeek-V3
+    provider: deepseek
+    model: deepseek-chat
+
+  - id: kimi
+    name: Kimi (Moonshot)
+    provider: moonshot
+    model: moonshot-v1-8k
+
+  - id: qwen
+    name: 通义千问 2.5-72B
+    provider: siliconflow
+    model: Qwen/Qwen2.5-72B-Instruct
+
+  - id: glm
+    name: GLM-4-9B
+    provider: siliconflow
+    model: THUDM/glm-4-9b-chat
+
+  - id: claude
+    name: Claude 3.5 Sonnet
+    provider: openrouter
+    model: anthropic/claude-3.5-sonnet
+
+  - id: gpt
+    name: GPT-4o mini
+    provider: openrouter
+    model: openai/gpt-4o-mini
+
+  - id: gemini
+    name: Gemini 1.5 Flash
+    provider: openrouter
+    model: google/gemini-flash-1.5
